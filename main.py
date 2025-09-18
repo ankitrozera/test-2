@@ -8,9 +8,9 @@ from uid import uid, validate_uid  # your UID generator
 # === CONFIG ===
 LAST_SERIAL_FILE = "last_serial.txt"
 SHEET_STATE_FILE = "sheet_state.json"
-MAX_ROWS_PER_SHEET = 100
+MAX_ROWS_PER_SHEET = 10000
 BATCH_SIZE = 100
-TOTAL_LIMIT = 200
+TOTAL_LIMIT = 500
 THREADS = 50
 RETRIES = 3
 ERROR_LIMIT = 10
@@ -171,12 +171,16 @@ def check_uid(serial, uid_val, logged_uids):
         return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
+    print(f"Debug: {encoded_uid}")
     print(f"Debug: Sending API request with params: {params}")
     print(f"Debug: Sending API request with encoded UID={base64.b64encode(uid_val.encode()).decode()}")
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
+            print(f"Debug: 2: {params}")
             print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}")  # print first 100 chars
+            print(f"Debug: 23: {r.status_code}")
+
             if r.status_code == 200:
                 try:
                     data = r.json()
