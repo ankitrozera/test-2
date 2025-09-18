@@ -231,12 +231,15 @@ def check_uid(serial, uid_val, logged_uids):
     # Aadhaar को base64 में encode करके भेजना होगा
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
-
-    print(f"🔍 Checking UID={uid_val}, Encoded={encoded_uid}")
-
+    # print(f"🔍 Checking UID={uid_val}, Encoded={encoded_uid}")
     for attempt in range(RETRIES):
         try:
-            r = requests.get(API_URL, params=params, verify=False, timeout=5)
+            r = requests.get(API_URL, params=params, verify=False, timeout=5, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json, text/plain, */*",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://ppp-office.haryana.gov.in/ReportGrievance",
+        })
             print(f"➡️ Full URL: {r.url}")
             print(f"➡️ Status={r.status_code}, Response={r.text[:120]}")
 
