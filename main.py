@@ -227,6 +227,7 @@ def process_batch(batch_serials, logged_uids):
 
 # === Main ===
 def main():
+    print("🚀 UID Checker started")
     try:
         with open(LAST_SERIAL_FILE, "r") as f:
             parts = f.read().strip().split(",")
@@ -245,6 +246,7 @@ def main():
         sheet_name = f"{SHEET_PREFIX}{file_no}"
         if not sheet_id:
             print("❌ Sheet creation failed. sheet_state.json not created. Exiting.")
+            print("🧪 Debug: sheet_id is None, likely due to token, quota, or API error.")
             return
 
 
@@ -270,3 +272,6 @@ def main():
                 with open(LAST_SERIAL_FILE, "w") as f:
                     f.write(f"{first_digit},{batch_end}")
                 current_serial = batch_end + 1
+
+if __name__ == "__main__":
+    main()
