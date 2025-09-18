@@ -50,8 +50,8 @@ def uid(serial: int, first_digit: int = 2) -> str:
     Structure: [first_digit][serial as 10-digit zero-padded][verhoeff check digit]
                = 1 + 10 + 1 = 12
     """
-    # if serial < 0:
-    #     raise ValueError("serial must be non-negative")
+    if serial < 0:
+        raise ValueError("serial must be non-negative")
     if serial < 0 or serial >= 10**10:
         raise ValueError("serial must be between 0 and 9999999999")
     if first_digit not in range(2, 10):
