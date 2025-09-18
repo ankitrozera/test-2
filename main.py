@@ -74,11 +74,45 @@ def save_sheet_state(sheet_name, sheet_id):
         json.dump({"sheet_name": sheet_name, "sheet_id": sheet_id}, f, indent=2)
 
 # === Google Sheets ===
+def find_sheet_by_name(sheet_name):
+    url = "https://www.googleapis.com/drive/v3/files"
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+    params = {
+        "q": f"name='{sheet_name}' and mimeType='application/vnd.google-apps.spreadsheet'",
+        "fields": "files(id, name)",
+        "spaces": "drive",
+        "corpora": "user"
+    }
+    res = requests.get(url, headers=headers, params=params)
+    if res.status_code == 200:
+        files = res.json().get("files", [])
+        if files:
+            return files[0]["id"]
+    print("⚠️ Sheet not found by name:", res.text)
+    return None
+
+def commit_json_to_git():
+    os.system('git config --global user.name "GitHub Actions"')
+    os.system('git config --global user.email "actions@github.com"')
+    os.system('git add sheet_state.json')
+    os.system('git diff --cached --quiet || (git commit -m "Update sheet ID" && git push)')
+
 def create_new_sheet(file_no):
-    if not refresh_access_token():                  # ⬅️ Line 2 above
-        print("❌ Cannot proceed without valid access token.")  # ✅ Your inserted line
-        return None    
+    if not refresh_access_token():
+        print("❌ Cannot proceed without valid access token.")
+        return None
+
     sheet_name = f"{SHEET_PREFIX}{file_no}"
+
+    # 🔍 Check if sheet already exists
+    existing_id = find_sheet_by_name(sheet_name)
+    if existing_id:
+        print(f"📄 Found existing sheet: {existing_id}")
+        save_sheet_state(sheet_name, existing_id)
+        commit_json_to_git()
+        return existing_id
+
+    # 🆕 Create new sheet
     url = "https://sheets.googleapis.com/v4/spreadsheets"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -86,14 +120,19 @@ def create_new_sheet(file_no):
     }
     body = {"properties": {"title": sheet_name}}
     res = requests.post(url, headers=headers, data=json.dumps(body))
+
+    print(f"🧾 Sheet creation response: {res.status_code}")
+    print(f"📦 Response body: {res.text}")
+
     if res.status_code == 200:
         sheet_id = res.json()["spreadsheetId"]
         print(f"📄 Sheet created: {sheet_id}")
         save_sheet_state(sheet_name, sheet_id)
+        commit_json_to_git()
         write_headers(sheet_id)
         return sheet_id
     else:
-        print("❌ Sheet creation failed:", res.text)
+        print("❌ Sheet creation failed.")
         return None
 
 def write_headers(sheet_id):
