@@ -134,32 +134,32 @@ def get_logged_uids(sheet_id):
     return set()
 
 # === Server Recovery ===
-def is_internet_available():
-    try:
-        socket.create_connection(("8.8.8.8", 53), timeout=5)
-        return True
-    except OSError:
-        return False
+# def is_internet_available():
+#     try:
+#         socket.create_connection(("8.8.8.8", 53), timeout=5)
+#         return True
+#     except OSError:
+#         return False
 
-def is_server_alive():
-    try:
-        r = requests.get(API_URL, params={"AadharNo": "test"}, timeout=10, verify=False)
-        return r.status_code == 200
-    except:
-        return False
+# def is_server_alive():
+#     try:
+#         r = requests.get(API_URL, params={"AadharNo": "test"}, timeout=10, verify=False)
+#         return r.status_code == 200
+#     except:
+#         return False
 
-def wait_for_recovery():
-    while not is_internet_available():
-        print("🌐 Internet down, retrying in 10 sec...")
-        time.sleep(10)
-    delay = 60
-    attempts = 0
-    while not is_server_alive():
-        print(f"🖥️ Server down, retrying in {delay//60} min...")
-        time.sleep(delay)
-        attempts += 1
-        if attempts >= 10 and delay < 300: delay = 300
-        if attempts >= 20 and delay < 1800: delay = 1800
+# def wait_for_recovery():
+#     while not is_internet_available():
+#         print("🌐 Internet down, retrying in 10 sec...")
+#         time.sleep(10)
+#     delay = 60
+#     attempts = 0
+#     while not is_server_alive():
+#         print(f"🖥️ Server down, retrying in {delay//60} min...")
+#         time.sleep(delay)
+#         attempts += 1
+#         if attempts >= 10 and delay < 300: delay = 300
+#         if attempts >= 20 and delay < 1800: delay = 1800
 
 # === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
@@ -171,14 +171,16 @@ def check_uid(serial, uid_val, logged_uids):
         return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
+    # params = {"AadharNo": uid_val}   # test only
     print(f"Debug: {encoded_uid}")
     print(f"Debug: Sending API request with params: {params}")
     print(f"Debug: Sending API request with encoded UID={base64.b64encode(uid_val.encode()).decode()}")
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
+            print(f"Debug: Full request URL: {r.url}")
             print(f"Debug: 2: {params}")
-            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}")  # print first 100 chars
+            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}, response text 2={r.json[:100]}")  # print first 100 chars
             print(f"Debug: 23: {r.status_code}")
 
             if r.status_code == 200:
