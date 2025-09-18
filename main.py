@@ -133,6 +133,9 @@ def create_new_sheet(file_no):
         return sheet_id
     else:
         print("❌ Sheet creation failed.")
+        print("🔍 Full response:", res.text)
+        print("📛 Headers used:", headers)
+        print("📦 Payload sent:", json.dumps(body))
         return None
 
 def write_headers(sheet_id):
