@@ -4,6 +4,11 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from uid import uid, validate_uid  # your UID generator
 # from uid import _d, _p, _inv     # no heed to explain we using  uid.py
+import urllib3
+from urllib.parse import urlencode
+
+# ✅ SSL warnings disable
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # === CONFIG ===
 LAST_SERIAL_FILE = "last_serial.txt"
