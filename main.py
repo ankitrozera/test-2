@@ -2,7 +2,8 @@
 import sys, os, requests, base64, json, threading, time, socket
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-from uid import uid  # your UID generator
+from uid import uid, validate_uid  # your UID generator
+# from uid import _d, _p, _inv     # no heed to explain we using  uid.py
 
 # === CONFIG ===
 LAST_SERIAL_FILE = "last_serial.txt"
@@ -154,6 +155,9 @@ def wait_for_recovery():
 def check_uid(serial, uid_val, logged_uids):
     global error_count
     if uid_val in logged_uids: return True
+    if not validate_uid(uid_val):
+        print(f"❌ Invalid UID format: {uid_val}")
+        return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
     for attempt in range(RETRIES):
@@ -189,6 +193,15 @@ def check_uid(serial, uid_val, logged_uids):
                 time.sleep(0.5)
     return False
 
+def validate_uid(uid12: str) -> bool:
+    """Validate a 12-digit UID using Verhoeff checksum."""
+    if not (isinstance(uid12, str) and uid12.isdigit() and len(uid12) == 12):
+        return False
+    c = 0
+    for i, ch in enumerate(reversed(uid12)):
+        c = _d[c][_p[i % 8][ord(ch) - 48]]
+    return c == 0
+
 # === Batch Processing ===
 def process_batch(batch_serials, logged_uids):
     global error_count
@@ -205,13 +218,24 @@ def process_batch(batch_serials, logged_uids):
 
 def main():
     print("🚀 UID Checker started")
+    global first_digit
     try:
         with open(LAST_SERIAL_FILE, "r") as f:
-            parts = f.read().strip().split(",")
-            start_serial = int(parts[1]) if len(parts) == 2 else 0
-    except:
+            content = f.read().strip()
+            if content:
+                parts = content.split(",")
+                if len(parts) == 2:
+                    first_digit = int(parts[0])
+                    start_serial = int(parts[1])
+                else:
+                    first_digit = 2
+                    start_serial = 0
+            else:
+                first_digit = 2
+                start_serial = 0
+    except FileNotFoundError:
+        first_digit = 2
         start_serial = 0
-
     end_serial = start_serial + TOTAL_LIMIT - 1
 
     # Load or create sheet
@@ -254,20 +278,35 @@ def main():
                 return
 
         # Write results to sheet
-        if ok_results:
-            success = write_batch_to_sheet(ok_results, sheet_id)
-            if success:
-                logged_uids.update([row[1] for row in ok_results])
-                with open(LAST_SERIAL_FILE, "w") as f:
-                    f.write(f"{first_digit},{batch_end}")
-                current_serial = batch_end + 1
-            else:
-                print("❌ Failed to write batch to sheet. Retrying...")
-        else:
-            # No results, still advance serial to avoid reprocessing
+        ok_results[:] = [row for row in ok_results if validate_uid(row[1])]
+        if not ok_results:
+            print("⚠️ No valid UIDs in batch. Skipping write.")
+            current_serial = batch_end + 1
+            continue
+
+        success = write_batch_to_sheet(ok_results, sheet_id)
+        if success:
+            logged_uids.update([row[1] for row in ok_results])
             with open(LAST_SERIAL_FILE, "w") as f:
                 f.write(f"{first_digit},{batch_end}")
             current_serial = batch_end + 1
+        else:
+            print("❌ Failed to write batch to sheet. Retrying...")
+       
+   
+    while current_serial > end_serial and first_digit < 9:
+        first_digit += 1
+        current_serial = 0
+        end_serial = TOTAL_LIMIT - 1
+        with open(LAST_SERIAL_FILE, "w") as f:
+            f.write(f"{first_digit},{current_serial}")
+        file_no += 1
+        sheet_id = create_new_sheet(file_no)
+        if not sheet_id:
+            print("❌ Sheet creation failed during digit rotation.")
+            return
+        logged_uids = get_logged_uids(sheet_id)
+        print(f"🔄 Moved to next digit: {first_digit}")
 
     print(f"🎯 Completed range {start_serial} → {end_serial}")
 if __name__ == "__main__":
