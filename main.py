@@ -229,12 +229,14 @@ def check_uid(serial, uid_val, logged_uids):
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
-            print(f"Debug: Full request URL: {r.url}")
-            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}")
+            print(f"➡️ Full URL sent: {r.url}")   # यहाँ URL दिखेगा
+            print(f"Debug: Status={r.status_code}")
+            print(f"Debug: First 100 chars of response: {r.text[:100]}")
 
             if r.status_code == 200:
                 try:
                     data = r.json()
+                    print(f"✅ JSON response sample: {str(data)[:200]}")
                     if not data:
                         return True  # ✅ blank → ignore
 
@@ -246,6 +248,7 @@ def check_uid(serial, uid_val, logged_uids):
                             return True
                     return True  # If none of the keys are present, still return True
                 except Exception as e:
+                    print(f"❌ JSON parse error: {e}")
                     print(f"❌ JSON parse error for UID={uid_val}: {e}")
                     return False
             else:
