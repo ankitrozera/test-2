@@ -219,47 +219,63 @@ def get_logged_uids(sheet_id):
 #     return False
 
 # === UID Check ===
+# === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
     global error_count
-    if stop_event.is_set():
-        return False
     if uid_val in logged_uids:
         return True
+    if not validate_uid(uid_val):
+        print(f"❌ Invalid UID format: {uid_val}")
+        return False
 
+    # Aadhaar को base64 में encode करके भेजना होगा
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
-    print(f"Debug: encoded uid={encoded_uid}, UID={uid_val}")
-    print(f"Debug: params={params}")
+
+    print(f"🔍 Checking UID={uid_val}, Encoded={encoded_uid}")
 
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
-            print(f"➡️ Full URL sent: {r.url}")   # यहाँ URL दिखेगा
-            print(f"Debug: Status={r.status_code}")
-            print(f"Debug: First 100 chars of response: {r.text[:100]}")
+            print(f"➡️ Full URL: {r.url}")
+            print(f"➡️ Status={r.status_code}, Response={r.text[:120]}")
 
             if r.status_code == 200:
                 try:
                     data = r.json()
-                    print(f"✅ JSON response sample: {str(data)[:200]}")
-                    if not data:
-                        return True  # ✅ blank → ignore
+                    if not data:   # blank [] → कोई record नहीं
+                        return True
 
                     item = data[0]
+
+                    # decode Base64 fields
                     for key in ["Mobileno", "NewMemberID", "NewFamilyID"]:
                         if item.get(key):
-                            with lock:
-                                ok_results.append(row)
-                            return True
-                    return True  # If none of the keys are present, still return True
+                            try:
+                                item[key] = base64.b64decode(item[key]).decode("utf-8")
+                            except Exception:
+                                pass  # अगर decode fail हुआ तो raw ही छोड़ देंगे
+
+                    # Prepare row for sheet
+                    row = [
+                        str(serial), uid_val, str(r.status_code),
+                        item.get("Mobileno", ""), item.get("NewMemberID", ""),
+                        item.get("NewFamilyID", ""), time.strftime("%Y-%m-%d %H:%M:%S")
+                    ]
+
+                    with lock:
+                        ok_results.append(row)
+
+                    return True
+
                 except Exception as e:
-                    print(f"❌ JSON parse error: {e}")
                     print(f"❌ JSON parse error for UID={uid_val}: {e}")
                     return False
             else:
                 with lock:
                     error_count += 1
                 return False
+
         except Exception as e:
             if attempt == RETRIES - 1:
                 print(f"❌ Request failed for UID={uid_val}: {e}")
@@ -269,6 +285,7 @@ def check_uid(serial, uid_val, logged_uids):
                 time.sleep(0.5)
 
     return False
+
 
 
 # # === UID Check ===
