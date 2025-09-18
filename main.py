@@ -216,45 +216,96 @@ def get_logged_uids(sheet_id):
 # === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
     global error_count
-    if stop_event.is_set(): return False
-    if uid_val in logged_uids: return True
+    if stop_event.is_set():
+        return False
+    if uid_val in logged_uids:
+        return True
 
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
-    print(f"Debug: encoded uid={base64.b64encode(uid_val.encode()).decode()}, UID={uid_val}")
+    print(f"Debug: encoded uid={encoded_uid}, UID={uid_val}")
     print(f"Debug: params={params}")
 
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
             print(f"Debug: Full request URL: {r.url}")
-            print(f"Debug: 2: {params}")
-            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}, response text 2={r.json[:100]}")  # print first 100 chars
-            print(f"Debug: 23: {r.status_code}")
+            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}")
+
             if r.status_code == 200:
                 try:
                     data = r.json()
-                    # if not data: return True  # ✅ blank → ignore
-                    if not data: return True
+                    if not data:
+                        return True  # ✅ blank → ignore
+
                     item = data[0]
                     for key in ["Mobileno", "NewMemberID", "NewFamilyID"]:
                         if item.get(key):
-
-                    with lock: ok_results.append(row)
-                    return True
-                except: return True
+                            with lock:
+                                ok_results.append(row)
+                            return True
+                    return True  # If none of the keys are present, still return True
                 except Exception as e:
                     print(f"❌ JSON parse error for UID={uid_val}: {e}")
                     return False
             else:
-                with lock: error_count += 1
+                with lock:
+                    error_count += 1
                 return False
         except Exception as e:
             if attempt == RETRIES - 1:
                 print(f"❌ Request failed for UID={uid_val}: {e}")
-                with lock: error_count += 1
+                with lock:
+                    error_count += 1
             else:
                 time.sleep(0.5)
+
+    return False
+
+
+# # === UID Check ===
+# def check_uid(serial, uid_val, logged_uids):
+#     global error_count
+#     if stop_event.is_set(): return False
+#     if uid_val in logged_uids: return True
+
+#     encoded_uid = base64.b64encode(uid_val.encode()).decode()
+#     params = {"AadharNo": encoded_uid}
+#     print(f"Debug: encoded uid={base64.b64encode(uid_val.encode()).decode()}, UID={uid_val}")
+#     print(f"Debug: params={params}")
+
+#     for attempt in range(RETRIES):
+#         try:
+#             r = requests.get(API_URL, params=params, verify=False, timeout=5)
+#             print(f"Debug: Full request URL: {r.url}")
+#             print(f"Debug: 2: {params}")
+#             print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}, response text 2={r.json[:100]}")  # print first 100 chars
+#             print(f"Debug: 23: {r.status_code}")
+#             if r.status_code == 200:
+#                 try:
+#                     data = r.json()
+#                     # if not data: return True  # ✅ blank → ignore
+#                     if not data: return True
+#                     item = data[0]
+#                     for key in ["Mobileno", "NewMemberID", "NewFamilyID"]:
+#                         if item.get(key):
+
+#                     with lock: 
+#                         ok_results.append(row)
+#                     return True
+#                 except: return True
+#                 except Exception as e:
+#                     print(f"❌ JSON parse error for UID={uid_val}: {e}")
+#                     return False
+#             else:
+#                 with lock: error_count += 1
+#                 return False
+#         except Exception as e:
+#             if attempt == RETRIES - 1:
+#                 print(f"❌ Request failed for UID={uid_val}: {e}")
+#                 with lock: error_count += 1
+#             else:
+#                 time.sleep(0.5)
 
 def validate_uid(uid12: str) -> bool:
     """Validate a 12-digit UID using Verhoeff checksum."""
