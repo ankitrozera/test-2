@@ -197,6 +197,10 @@ def main():
         file_no = 1
         sheet_id = create_new_sheet(file_no)
         sheet_name = f"{SHEET_PREFIX}{file_no}"
+        if not sheet_id:
+            print("❌ Sheet creation failed. sheet_state.json not created. Exiting.")
+            return
+
 
     logged_uids = get_logged_uids(sheet_id)
     current_serial = start_serial
