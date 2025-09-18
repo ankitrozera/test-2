@@ -213,7 +213,7 @@ def get_logged_uids(sheet_id):
 #                 time.sleep(0.5)
 #     return False
 
- === UID Check ===
+# === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
     global error_count
     if stop_event.is_set(): return False
