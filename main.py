@@ -14,9 +14,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 LAST_SERIAL_FILE = "last_serial.txt"
 SHEET_STATE_FILE = "sheet_state.json"
 MAX_ROWS_PER_SHEET = 10000
-BATCH_SIZE = 100
-TOTAL_LIMIT = 500
-THREADS = 50
+BATCH_SIZE = 10
+TOTAL_LIMIT = 50
+THREADS = 1
 RETRIES = 3
 ERROR_LIMIT = 10
 API_URL = "https://ppp-office.haryana.gov.in/ReportGrievance/SearchFamilyByAadharNo"
