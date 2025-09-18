@@ -1,3 +1,4 @@
+
 import sys, os, requests, base64, json, threading, time, socket
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
@@ -21,7 +22,7 @@ CLIENT_SECRET = "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"
 REFRESH_TOKEN = "1//04SZPj0Na1xgFCgYIARAAGAQSNwF-L9IrvlAvyrcEU5z2rVto6skNdq9MgFjQUAIPA7zfdJ6yhnT3zz77EpVEmXPCU7gWnSviCzo"
 ACCESS_TOKEN = "ya29.a0AS3H6Nxk4L6qLjkxisU4QEfSvFFU3PyzNL5XFNRL1ZYhp1OLa4yVTavEeNTfjytwMJ4njQSVugnW-5sOV-araEOTpvUwxMDwXcuYc81YYoDVMXCchNMi2r98q-ztaCU4lnmvy4Ml1clfVqciuZY1KylSHTKkVlYEDVLrZXToexW4w4i97eElucopHsJ5GtdbVRtX34waCgYKAcUSARMSFQHGX2MimISWb5_lv3XIgKWZcpPozg0206"
 
-SHEET_PREFIX = "UID_Results33_"
+SHEET_PREFIX = "UID_Results_"
 SHEET_HEADERS = ["serial", "uid", "status", "Mobileno", "NewMemberID", "NewFamilyID", "checked_at"]
 
 # === Globals ===
@@ -163,15 +164,18 @@ def wait_for_recovery():
 # === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
     global error_count
+    print(f"Debug: Checking serial={serial}, UID={uid_val}")
     if uid_val in logged_uids: return True
     if not validate_uid(uid_val):
         print(f"❌ Invalid UID format: {uid_val}")
         return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
+    print(f"Debug: Sending API request with encoded UID={base64.b64encode(uid_val.encode()).decode()}")
     for attempt in range(RETRIES):
         try:
             r = requests.get(API_URL, params=params, verify=False, timeout=5)
+            print(f"Debug: Response status={r.status_code}, response text={r.text[:100]}")  # print first 100 chars
             if r.status_code == 200:
                 try:
                     data = r.json()
@@ -299,9 +303,12 @@ def main():
         success = write_batch_to_sheet(ok_results, sheet_id)
         if success:
             logged_uids.update([row[1] for row in ok_results])
-
-            with open(LAST_SERIAL_FILE, "w") as f:
-                f.write(f"{first_digit},{batch_end}")
+            try:
+                with open(LAST_SERIAL_FILE, "w") as f:
+                    f.write(f"{first_digit},{batch_end}")
+                    print(f"Debug: last_serial.txt updated with {first_digit},{batch_end}")
+            except Exception as e:
+                print(f"Error updating last_serial.txt: {e}")
             #========================================================
             with open(SHEET_STATE_FILE, "r") as f:
                 state = json.load(f)
@@ -330,4 +337,3 @@ def main():
     print(f"🎯 Completed range {start_serial} → {end_serial}")
 if __name__ == "__main__":
     main()
-
