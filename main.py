@@ -171,6 +171,7 @@ def check_uid(serial, uid_val, logged_uids):
         return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
     params = {"AadharNo": encoded_uid}
+    print(f"Debug: Sending API request with params: {params}")
     print(f"Debug: Sending API request with encoded UID={base64.b64encode(uid_val.encode()).decode()}")
     for attempt in range(RETRIES):
         try:
