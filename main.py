@@ -1,4 +1,3 @@
-
 import sys, os, requests, base64, json, threading, time, socket
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
@@ -58,9 +57,18 @@ def load_sheet_state():
             return json.load(f)
     except: return None
 
-def save_sheet_state(sheet_name, sheet_id):
+# def save_sheet_state(sheet_name, sheet_id):
+#     with open(SHEET_STATE_FILE, "w") as f:
+#         json.dump({"sheet_name": sheet_name, "sheet_id": sheet_id}, f, indent=2)
+def save_sheet_state(sheet_name, sheet_id, row_count=0, created_at=None):
+    state = {
+        "sheet_name": sheet_name,
+        "sheet_id": sheet_id,
+        "row_count": row_count,
+        "created_at": created_at or datetime.utcnow().isoformat()
+    }
     with open(SHEET_STATE_FILE, "w") as f:
-        json.dump({"sheet_name": sheet_name, "sheet_id": sheet_id}, f, indent=2)
+        json.dump(state, f, indent=2)
 
 def commit_json_to_git():
     os.system('git config --global user.name "GitHub Actions"')
@@ -83,7 +91,8 @@ def create_new_sheet(file_no):
     res = requests.post(url, headers=headers, data=json.dumps(body))
     if res.status_code == 200:
         sheet_id = res.json()["spreadsheetId"]
-        save_sheet_state(sheet_name, sheet_id)
+        # save_sheet_state(sheet_name, sheet_id)
+        save_sheet_state(sheet_name, sheet_id, row_count=0, created_at=datetime.utcnow().isoformat())
         commit_json_to_git()
         write_headers(sheet_id)
         return sheet_id
@@ -248,6 +257,8 @@ def main():
         file_no = 1
         sheet_id = create_new_sheet(file_no)
         sheet_name = f"{SHEET_PREFIX}{file_no}"
+        save_sheet_state(sheet_name, sheet_id, row_count=0, created_at=datetime.utcnow().isoformat()) 
+        # save_sheet_state(sheet_name, sheet_id)  # <- ADD here
         if not sheet_id:
             print("❌ Sheet creation failed. sheet_state.json not created. Exiting.")
             print("🧪 Debug: sheet_id is None, likely due to token, quota, or API error.")
@@ -273,6 +284,7 @@ def main():
             sheet_id = create_new_sheet(file_no)
             sheet_name = f"{SHEET_PREFIX}{file_no}"
             logged_uids = set()
+            save_sheet_state(sheet_name, sheet_id, row_count=0, created_at=datetime.utcnow().isoformat())  # <- ADD this line to update json file
             if not sheet_id:
                 print("❌ Sheet rotation failed. Exiting.")
                 return
@@ -287,8 +299,15 @@ def main():
         success = write_batch_to_sheet(ok_results, sheet_id)
         if success:
             logged_uids.update([row[1] for row in ok_results])
+
             with open(LAST_SERIAL_FILE, "w") as f:
                 f.write(f"{first_digit},{batch_end}")
+            #========================================================
+            with open(SHEET_STATE_FILE, "r") as f:
+                state = json.load(f)
+            row_count = state.get("row_count", 0) + len(ok_results)
+            save_sheet_state(sheet_name, sheet_id, row_count=row_count, created_at=state.get("created_at"))
+            #====================================================
             current_serial = batch_end + 1
         else:
             print("❌ Failed to write batch to sheet. Retrying...")
@@ -311,3 +330,4 @@ def main():
     print(f"🎯 Completed range {start_serial} → {end_serial}")
 if __name__ == "__main__":
     main()
+
