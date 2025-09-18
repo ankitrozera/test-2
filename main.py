@@ -56,8 +56,10 @@ def refresh_access_token():
     if res.status_code == 200:
         ACCESS_TOKEN = res.json()["access_token"]
         print("🔄 Access token refreshed.")
+        return True
     else:
         print("❌ Token refresh failed:", res.text)
+        return False
 
 # === Sheet State ===
 def load_sheet_state():
@@ -73,7 +75,9 @@ def save_sheet_state(sheet_name, sheet_id):
 
 # === Google Sheets ===
 def create_new_sheet(file_no):
-    refresh_access_token()
+    if not refresh_access_token():                  # ⬅️ Line 2 above
+        print("❌ Cannot proceed without valid access token.")  # ✅ Your inserted line
+        return None    
     sheet_name = f"{SHEET_PREFIX}{file_no}"
     url = "https://sheets.googleapis.com/v4/spreadsheets"
     headers = {
