@@ -170,8 +170,8 @@ def check_uid(serial, uid_val, logged_uids):
         print(f"❌ Invalid UID format: {uid_val}")
         return False
     encoded_uid = base64.b64encode(uid_val.encode()).decode()
-    params = {"AadharNo": encoded_uid}
-    # params = {"AadharNo": uid_val}   # test only
+    # params = {"AadharNo": encoded_uid}
+    params = {"AadharNo": uid_val}   # test only
     print(f"Debug: {encoded_uid}")
     print(f"Debug: Sending API request with params: {params}")
     print(f"Debug: Sending API request with encoded UID={base64.b64encode(uid_val.encode()).decode()}")
@@ -303,7 +303,7 @@ def main():
         # Write results to sheet
         ok_results[:] = [row for row in ok_results if validate_uid(row[1])]
         if not ok_results:
-            print("⚠️ No valid UIDs in batch. Skipping write.")
+            print("⚠️ ⚠️No valid UIDs in batch. Skipping write.")
             current_serial = batch_end + 1
             continue
 
