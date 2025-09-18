@@ -1,0 +1,50 @@
+name: UID Checker
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 */5 * * *'  # Every 5 hours
+
+concurrency:
+  group: uid-checker-group
+  cancel-in-progress: true  # ✅ Kill previous job if new one starts
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300  # Optional: auto-kill after 5 hours
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install requests pymongo colorama numpy
+
+      - name: 🚀 Run UID Checker
+        run: |
+          python your_script.py
+
+      - name: 📄 Show last_serial.txt
+        run: |
+          echo "🔢 Last Serial File:"
+          cat last_serial.txt || echo "File not found"
+
+      - name: 📄 Show sheet_state.json
+        run: |
+          echo "📊 Sheet State File:"
+          cat sheet_state.json || echo "File not found"
+
+      - name: 📤 Upload status files
+        uses: actions/upload-artifact@v3
+        with:
+          name: uid-status-files
+          path: |
+            last_serial.txt
+            sheet_state.json
