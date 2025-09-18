@@ -164,7 +164,7 @@ def wait_for_recovery():
 # === UID Check ===
 def check_uid(serial, uid_val, logged_uids):
     global error_count
-    print(f"Debug: Checking serial={serial}, UID={uid_val}")
+    # print(f"Debug: Checking serial={serial}, UID={uid_val}")
     if uid_val in logged_uids: return True
     if not validate_uid(uid_val):
         print(f"❌ Invalid UID format: {uid_val}")
