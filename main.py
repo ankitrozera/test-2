@@ -6,9 +6,9 @@ from uid import uid  # your existing UID generator
 # === CONFIG ===
 LAST_SERIAL_FILE = "last_serial.txt"
 SHEET_STATE_FILE = "sheet_state.json"
-MAX_ROWS_PER_SHEET = 100000
+MAX_ROWS_PER_SHEET = 100     # sheet rows
 BATCH_SIZE = 100
-TOTAL_LIMIT = 1000000
+TOTAL_LIMIT = 200    #1 lakh 
 THREADS = 50
 RETRIES = 3
 ERROR_LIMIT = 10
