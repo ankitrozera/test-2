@@ -12,7 +12,7 @@ concurrency:
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    timeout-minutes: 300  # Optional: auto-kill after 5 hours
+    # timeout-minutes: 300  # Optional: auto-kill after 5 hours
 
     steps:
       - name: ⬇️ Checkout repository
@@ -29,7 +29,7 @@ jobs:
 
       - name: 🚀 Run UID Checker
         run: |
-          python your_script.py
+          python main.py
 
       - name: 📄 Show last_serial.txt
         run: |
@@ -48,3 +48,6 @@ jobs:
           path: |
             last_serial.txt
             sheet_state.json
+
+
+            
