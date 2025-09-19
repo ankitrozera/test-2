@@ -234,7 +234,7 @@ def check_uid(serial, uid_val, logged_uids):
     # print(f"🔍 Checking UID={uid_val}, Encoded={encoded_uid}")
     for attempt in range(RETRIES):
         try:
-            r = requests.get(API_URL, params=params, verify=False, timeout=5, headers={
+            r = requests.get(API_URL, params=params, verify=False, timeout=20, headers={
             "User-Agent": "Mozilla/5.0",
             "Accept": "application/json, text/plain, */*",
             "X-Requested-With": "XMLHttpRequest",
