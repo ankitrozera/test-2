@@ -21,6 +21,9 @@ RETRIES = 3
 ERROR_LIMIT = 10
 API_URL = "https://ppp-office.haryana.gov.in/ReportGrievance/SearchFamilyByAadharNo"
 
+PROXY = "http://127.0.0.1:8888"
+proxies = {"http": PROXY, "https": PROXY}
+
 # 🔐 OAuth credentials
 CLIENT_ID = "737936576743-5dq4nrm7gemrhcks9k4rj5jb0i1futqh.apps.googleusercontent.com"
 CLIENT_SECRET = "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"
