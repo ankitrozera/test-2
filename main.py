@@ -15,7 +15,7 @@ params = {"AadharNo": "Njk3OTgzNzUyMjk3"}  # 225866565460
 
 
 # Send get
-response = requests.get(url, params=params,  verify=False)
+response = requests.get(url, params=params, proxies=proxies,  verify=False)
 
 
 data = response.json()
