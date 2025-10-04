@@ -65,7 +65,7 @@ proxies_socks = {"http": socks_proxy, "https": socks_proxy}
 def test_proxy(name, proxies):
     print(f"\nTesting {name} proxy:")
     try:
-        r = requests.get("https://httpbin.org/ip", proxies=proxies, timeout=15, verify=False)
+        r = requests.get("https://ppp-office.haryana.gov.in/ReportGrievance/SearchFamilyByAadharNo", proxies=proxies, timeout=15, verify=False)
         print("Status:", r.status_code, "| Body:", r.text.strip())
     except Exception as e:
         print("Error:", e)
