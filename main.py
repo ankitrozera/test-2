@@ -77,8 +77,8 @@ AADHAR_PARAM = "Njk3OTgzNzUyMjk3"
 # Format examples:
 #   http:  "http://user:pass@host:49155"
 #   socks: "socks5h://user:pass@host:49156"
-PROXY_HTTP = "http://shivnathjan2001:REPLACE_PASS@223.185.53.133:49155"
-PROXY_SOCKS = "socks5h://shivnathjan2001:REPLACE_PASS@223.185.53.133:49156"
+PROXY_HTTP = "http://shivnathjan2001:REPLACE_PASS@"103.167.33.6":49155"
+PROXY_SOCKS = "socks5h://shivnathjan2001:REPLACE_PASS@"103.167.33.6":49156"
 
 # Timeouts / behavior
 REQUEST_TIMEOUT = 20    # seconds
