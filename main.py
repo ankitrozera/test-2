@@ -8,8 +8,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # url = "https://ppp-office.haryana.gov.in/ReportGrievance/SearchFamilyByAadharNo"
 url = "https://ppp-office.haryana.gov.in/ReportGrievance/SearchFamilyByAadharNo"
 
-PROXY = "http://223.185.53.133:8888"
-proxies = {"http": PROXY, "https": PROXY}
+# PROXY = "http://223.185.53.133:8888"
+# proxies = {"http": PROXY, "https": PROXY}
 
 PROXIES = [
     "http://shivnathjan2001:gA5vkef6fE@223.185.53.133:49155",
