@@ -49,13 +49,6 @@ jobs:
       - run: |
           pip install requests[socks]
           python main.py
-        env:
-          PROXY_HOST: ${{ secrets.PROXY_HOST }}
-          HTTP_PORT: ${{ secrets.HTTP_PORT }}
-          SOCKS_PORT: ${{ secrets.SOCKS_PORT }}
-          PROXY_USER: ${{ secrets.PROXY_USER }}
-          PROXY_PASS: ${{ secrets.PROXY_PASS }}
-
 
 
           
