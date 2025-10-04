@@ -1,32 +1,61 @@
-name: Run proxy test
+# name: Run proxy test
+
+# on:
+#   workflow_dispatch:
+
+# jobs:
+#   run:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.11"
+
+#       - name: Install deps
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install requests[socks]   # installs socks support (ok even if not used)
+
+#       - name: Run script (with secrets)
+#         env:
+#           PROXY_HOST: ${{ secrets.PROXY_HOST }}
+#           PROXY_USER: ${{ secrets.PROXY_USER }}
+#           PROXY_PASS: ${{ secrets.PROXY_PASS }}
+#           PROXY_HTTP_PORT: ${{ secrets.PROXY_HTTP_PORT }}
+#           PROXY_SOCKS_PORT: ${{ secrets.PROXY_SOCKS_PORT }}
+#           PROXY_SCHEME: ${{ secrets.PROXY_SCHEME }}
+#           TARGET_URL: ${{ secrets.TARGET_URL }}
+#         run: |
+#           python main.py
+
+
+
+name: Test proxies 
 
 on:
   workflow_dispatch:
 
 jobs:
-  run:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests[socks]   # installs socks support (ok even if not used)
-
-      - name: Run script (with secrets)
+      - run: |
+          pip install requests[socks]
+          python main.py
         env:
           PROXY_HOST: ${{ secrets.PROXY_HOST }}
+          HTTP_PORT: ${{ secrets.HTTP_PORT }}
+          SOCKS_PORT: ${{ secrets.SOCKS_PORT }}
           PROXY_USER: ${{ secrets.PROXY_USER }}
           PROXY_PASS: ${{ secrets.PROXY_PASS }}
-          PROXY_HTTP_PORT: ${{ secrets.PROXY_HTTP_PORT }}
-          PROXY_SOCKS_PORT: ${{ secrets.PROXY_SOCKS_PORT }}
-          PROXY_SCHEME: ${{ secrets.PROXY_SCHEME }}
-          TARGET_URL: ${{ secrets.TARGET_URL }}
-        run: |
-          python main.py
+
+
+
+          
